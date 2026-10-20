@@ -16,12 +16,19 @@ export interface Cabinet {
   joystick: THREE.Object3D | null;
   buttons: THREE.Object3D[];
   source: "gltf" | "stand-in";
+  /** Size of the glass in metres, so the camera can frame it. */
+  screenW: number;
+  screenH: number;
 }
 
-export const SCREEN_W = 0.46, SCREEN_H = SCREEN_W * (288 / 224);
+/** The biggest screen of the given width ÷ height that fits the bezel opening (about 0.6 × 0.6 m). */
+export function screenSize(aspect: number): { w: number; h: number } {
+  const w = Math.min(0.6, 0.6 * aspect);
+  return { w, h: w / aspect };
+}
 
 /** Try the Blender model first; fall back to the stand-in. */
-export async function loadCabinet(url: string, marquee: string): Promise<Cabinet> {
+export async function loadCabinet(url: string, marquee: string, aspect: number): Promise<Cabinet> {
   try {
     const head = await fetch(url, { method: "HEAD" });
     const type = head.headers.get("content-type") || "";
@@ -33,14 +40,15 @@ export async function loadCabinet(url: string, marquee: string): Promise<Cabinet
       const screen = find("Screen");
       if (screen && (screen as THREE.Mesh).isMesh) {
         gltf.scene.traverse((o) => { if ((o as THREE.Mesh).isMesh) { o.castShadow = true; o.receiveShadow = true; } });
-        return { group, screen: screen as THREE.Mesh, joystick: find("Joystick"), buttons: ["ButtonA", "ButtonB", "Start"].map(find).filter((o): o is THREE.Object3D => !!o), source: "gltf" };
+        const box = new THREE.Box3().setFromObject(screen).getSize(new THREE.Vector3());
+        return { group, screen: screen as THREE.Mesh, joystick: find("Joystick"), buttons: ["ButtonA", "ButtonB", "Start"].map(find).filter((o): o is THREE.Object3D => !!o), source: "gltf", screenW: box.x, screenH: Math.hypot(box.y, box.z) };
       }
       console.warn("cabinet.glb has no mesh named \"Screen\"; using the stand-in cabinet.");
     }
   } catch {
     /* no model, or it failed to load: use the stand-in */
   }
-  return buildStandIn(marquee);
+  return buildStandIn(marquee, aspect);
 }
 
 // ---------------------------------------------------------------------------------------------------------
@@ -123,7 +131,7 @@ function panelBetween(a: [number, number], b: [number, number], mat: THREE.Mater
   return m;
 }
 
-export function buildStandIn(marquee: string): Cabinet {
+export function buildStandIn(marquee: string, aspect: number): Cabinet {
   const group = new THREE.Group();
   group.name = "Cabinet (stand-in)";
 
@@ -172,7 +180,8 @@ export function buildStandIn(marquee: string): Cabinet {
   group.add(panelBetween(at(0), at(1), black, 0.01));                      // base
 
   // The screen sits in the bezel, slightly in front of it
-  const screen = new THREE.Mesh(createScreenGeometry(SCREEN_W, SCREEN_H), new THREE.MeshBasicMaterial({ color: "#000000" }));
+  const { w: screenW, h: screenH } = screenSize(aspect);
+  const screen = new THREE.Mesh(createScreenGeometry(screenW, screenH), new THREE.MeshBasicMaterial({ color: "#000000" }));
   screen.name = "Screen";
   screen.position.copy(bezelPanel.position);
   screen.rotation.copy(bezelPanel.rotation);
@@ -236,5 +245,5 @@ export function buildStandIn(marquee: string): Cabinet {
   }
 
   group.traverse((o) => { if ((o as THREE.Mesh).isMesh) { o.castShadow = true; o.receiveShadow = true; } });
-  return { group, screen, joystick: stick, buttons, source: "stand-in" };
+  return { group, screen, joystick: stick, buttons, source: "stand-in", screenW, screenH };
 }

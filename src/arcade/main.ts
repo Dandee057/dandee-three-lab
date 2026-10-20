@@ -4,9 +4,10 @@ import { EffectComposer } from "three/addons/postprocessing/EffectComposer.js";
 import { RenderPass } from "three/addons/postprocessing/RenderPass.js";
 import { UnrealBloomPass } from "three/addons/postprocessing/UnrealBloomPass.js";
 import { OutputPass } from "three/addons/postprocessing/OutputPass.js";
-import { ArcadeGame, GAME_W, GAME_H } from "./game";
+import type { CabinetGame, GameKey } from "./game";
+import { MiniKnight } from "./mini-knight";
 import { createCrtMaterial } from "./crt";
-import { buildStandIn, loadCabinet, SCREEN_H, SCREEN_W, type Cabinet } from "./cabinet";
+import { buildStandIn, loadCabinet, type Cabinet } from "./cabinet";
 import { buildRoom } from "./room";
 import "../shared/base.css";
 import "./arcade.css";
@@ -50,22 +51,24 @@ composer.addPass(bloom);
 composer.addPass(new OutputPass());
 
 // ---------- The game and its screen ----------
-const game = new ArcadeGame();
-const crt = createCrtMaterial({ map: game.target.texture, resolution: new THREE.Vector2(GAME_W, GAME_H), brightness: 1.2 });
+// Any game that implements CabinetGame can go here
+const game: CabinetGame = new MiniKnight();
+const crt = createCrtMaterial({ map: game.target.texture, resolution: game.crtResolution, brightness: 1.15 });
 const statics: THREE.ShaderMaterial[] = [];
 
 let cab: Cabinet | null = null;
 const OVERVIEW = { pos: new THREE.Vector3(0.95, 1.55, 2.55), target: new THREE.Vector3(0, 1.08, -0.25) };
 
 async function init(): Promise<void> {
-  cab = await loadCabinet(import.meta.env.BASE_URL + "models/cabinet.glb", "DANDEE");
+  const [cabinet] = await Promise.all([loadCabinet(new URL("../models/cabinet.glb", location.href).href, game.marquee, game.aspect), game.load()]);
+  cab = cabinet;
   cab.screen.material = crt;
   scene.add(cab.group);
 
   // Two neighbours showing an untuned channel, so the main cabinet reads as part of a row
   for (const sgn of [-1, 1]) {
-    const n = cab.source === "gltf" ? cloneWithScreen(cab) : buildStandIn("COMING SOON");
-    const mat = createCrtMaterial({ map: null, resolution: new THREE.Vector2(GAME_W, GAME_H), noise: true, brightness: 0.7 });
+    const n = cab.source === "gltf" ? cloneWithScreen(cab) : buildStandIn("COMING SOON", game.aspect);
+    const mat = createCrtMaterial({ map: null, resolution: game.crtResolution, noise: true, brightness: 0.7 });
     n.screen.material = mat;
     statics.push(mat);
     n.group.position.set(sgn * 1.02, 0, -0.18);
@@ -83,7 +86,7 @@ async function init(): Promise<void> {
 function cloneWithScreen(src: Cabinet): Cabinet {
   const group = src.group.clone(true);
   const screen = group.getObjectByName("Screen") as THREE.Mesh;
-  return { group, screen, joystick: null, buttons: [], source: "gltf" };
+  return { group, screen, joystick: null, buttons: [], source: "gltf", screenW: src.screenW, screenH: src.screenH };
 }
 
 // ---------- Camera moves: overview ↔ playing ----------
@@ -103,8 +106,8 @@ function playView(): { pos: THREE.Vector3; target: THREE.Vector3 } {
   const normal = new THREE.Vector3(0, 0, 1).applyQuaternion(s.getWorldQuaternion(new THREE.Quaternion()));
   // Back off far enough that the whole screen fits, in portrait or landscape
   const half = THREE.MathUtils.degToRad(camera.fov / 2);
-  const fitH = (SCREEN_H * 0.62) / Math.tan(half);
-  const fitW = (SCREEN_W * 0.62) / (Math.tan(half) * camera.aspect);
+  const fitH = (cab!.screenH * 0.68) / Math.tan(half);
+  const fitW = (cab!.screenW * 0.6) / (Math.tan(half) * camera.aspect);
   const dist = Math.max(fitH, fitW, 0.55);
   return { pos: center.clone().addScaledVector(normal, dist), target: center };
 }
@@ -116,11 +119,9 @@ function enterPlay(): void {
   controls.enabled = false;
   const v = playView();
   setView(v.pos, v.target);
-  game.press();
+  game.enter();
   $("play").textContent = "Step back";
-  $("hint").textContent = matchMedia("(pointer: coarse)").matches
-    ? "Drag on the screen to move · Tap to launch"
-    : "← → or A D to move · Space to launch · Esc to step back";
+  $("hint").textContent = matchMedia("(pointer: coarse)").matches ? game.touchHint : game.controlsHint;
   renderer.domElement.focus({ preventScroll: true });
 }
 function exitPlay(): void {
@@ -128,7 +129,7 @@ function exitPlay(): void {
   mode = "overview";
   document.body.classList.remove("playing");
   controls.enabled = true;
-  game.setPointer(null);
+  game.leave();
   setView(OVERVIEW.pos, OVERVIEW.target);
   $("play").textContent = "Play";
   $("hint").textContent = "Drag to look around · Click the screen to play";
@@ -147,14 +148,10 @@ function screenUv(e: PointerEvent): THREE.Vector2 | null {
   return hit && hit.uv ? hit.uv : null;
 }
 let downAt: { x: number; y: number } | null = null;
-renderer.domElement.addEventListener("pointerdown", (e) => {
-  downAt = { x: e.clientX, y: e.clientY };
-  if (mode === "play") { const uv = screenUv(e); if (uv) game.setPointer(uv.x); }
-});
+renderer.domElement.addEventListener("pointerdown", (e) => { downAt = { x: e.clientX, y: e.clientY }; });
 renderer.domElement.addEventListener("pointermove", (e) => {
   const uv = screenUv(e);
   renderer.domElement.style.cursor = uv ? "pointer" : mode === "play" ? "default" : "grab";
-  if (mode === "play" && uv && (e.pointerType === "mouse" || e.buttons)) game.setPointer(uv.x);
 });
 renderer.domElement.addEventListener("pointerup", (e) => {
   const moved = downAt ? Math.hypot(e.clientX - downAt.x, e.clientY - downAt.y) : 99;
@@ -162,27 +159,30 @@ renderer.domElement.addEventListener("pointerup", (e) => {
   if (moved > 6) return;
   const uv = screenUv(e);
   if (mode === "overview") { if (uv) enterPlay(); }
-  else { game.press(); pressButton(0); }
+  else if (uv) game.click(uv.x, uv.y); // clicks on the glass land on the game's own menu buttons
 });
 
-const keyDir: Record<string, "left" | "right"> = { ArrowLeft: "left", KeyA: "left", ArrowRight: "right", KeyD: "right" };
+const KEYS: Record<string, GameKey> = {
+  ArrowLeft: "left", KeyA: "left", ArrowRight: "right", KeyD: "right", ArrowUp: "up", KeyW: "up", ArrowDown: "down", KeyS: "down",
+  Space: "jump", KeyZ: "shoot", KeyX: "shoot", KeyJ: "shoot"
+};
 window.addEventListener("keydown", (e) => {
   if (e.target instanceof HTMLButtonElement && (e.code === "Space" || e.code === "Enter")) return;
   if (mode === "play") {
-    if (keyDir[e.code]) { game.setKey(keyDir[e.code], true); e.preventDefault(); }
-    else if (e.code === "Space" || e.code === "Enter") { game.press(); pressButton(e.code === "Enter" ? 2 : 0); e.preventDefault(); }
+    if (KEYS[e.code]) { if (!e.repeat) game.setKey(KEYS[e.code], true); e.preventDefault(); }
+    else if (e.code === "Enter") { game.press(); e.preventDefault(); }
     else if (e.code === "Escape") exitPlay();
   } else if (e.code === "Enter" && document.activeElement === renderer.domElement) enterPlay();
 });
-window.addEventListener("keyup", (e) => { if (keyDir[e.code]) game.setKey(keyDir[e.code], false); });
+window.addEventListener("keyup", (e) => { if (KEYS[e.code]) game.setKey(KEYS[e.code], false); });
+window.addEventListener("blur", () => { for (const k of new Set(Object.values(KEYS))) game.setKey(k, false); });
 
-// On-screen buttons for touch devices
-for (const [id, dir] of [["t-left", "left"], ["t-right", "right"]] as const) {
+// On-screen buttons for touch devices: held while the finger is down
+for (const [id, key] of [["t-left", "left"], ["t-right", "right"], ["t-jump", "jump"], ["t-fire", "shoot"]] as const) {
   const b = $(id);
-  b.addEventListener("pointerdown", (e) => { e.preventDefault(); game.setKey(dir, true); });
-  for (const ev of ["pointerup", "pointerleave", "pointercancel"]) b.addEventListener(ev, () => game.setKey(dir, false));
+  b.addEventListener("pointerdown", (e) => { e.preventDefault(); b.setPointerCapture(e.pointerId); game.setKey(key, true); });
+  for (const ev of ["pointerup", "pointercancel", "lostpointercapture"]) b.addEventListener(ev, () => game.setKey(key, false));
 }
-$("t-fire").addEventListener("click", () => { game.press(); pressButton(0); });
 
 // ---------- Dock ----------
 $("play").addEventListener("click", () => (mode === "play" ? exitPlay() : enterPlay()));
@@ -191,6 +191,11 @@ $("crt").addEventListener("click", (e) => {
   crtTarget = crtTarget ? 0 : 1;
   (e.currentTarget as HTMLElement).setAttribute("aria-pressed", String(!!crtTarget));
 });
+const soundBtn = $("sound");
+soundBtn.addEventListener("click", () => { game.sound = !game.sound; soundBtn.setAttribute("aria-pressed", String(game.sound)); });
+game.onSoundChange = (on) => soundBtn.setAttribute("aria-pressed", String(on));
+game.onExit = () => exitPlay();
+game.onButton = (i) => pressButton(i);
 $("bloom").addEventListener("click", (e) => {
   bloom.enabled = !bloom.enabled;
   (e.currentTarget as HTMLElement).setAttribute("aria-pressed", String(bloom.enabled));
@@ -206,7 +211,7 @@ const pressT = [0, 0, 0];
 function pressButton(i: number): void { pressT[i] = 1; }
 const flashColor = new THREE.Color("#7fd8ff"), baseLight = new THREE.Color("#7fd8ff");
 let flash = 0;
-game.onHit = (c) => { flash = 1; flashColor.copy(c); };
+game.onFlash = (c) => { flash = 1; flashColor.copy(c); };
 
 // ---------- Resize ----------
 function resize(): void {
@@ -263,7 +268,7 @@ function frame(): void {
       cap.position.z = 0.01 - 0.007 * Math.sin(pressT[i] * Math.PI);
     });
 
-    // Screen light: sits just in front of the tube, flashes the colour of each brick hit
+    // Screen light: sits just in front of the tube, flashes on hits, deaths and wins
     cab.screen.getWorldPosition(tmp);
     const n = new THREE.Vector3(0, 0, 1).applyQuaternion(cab.screen.getWorldQuaternion(q));
     room.screenLight.position.copy(tmp).addScaledVector(n, 0.35);

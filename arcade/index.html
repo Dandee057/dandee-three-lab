@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Arcade Cabinet · Three Lab</title>
-<meta name="description" content="A playable 3D arcade cabinet in Three.js: a game rendered to a texture, a GLSL CRT shader, bloom and a Blender-to-glTF pipeline.">
+<meta name="description" content="Mini Knight, a platformer first written in Python, ported to TypeScript and playable on a 3D arcade cabinet in Three.js with a GLSL CRT shader and bloom.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;600&family=Press+Start+2P&display=swap">
@@ -15,7 +15,7 @@
   <header class="top">
     <a class="back" href="../">← Three Lab</a>
     <h1>Arcade cabinet</h1>
-    <p>A playable game on a 3D cabinet: rendered to a texture, shown through a CRT shader.</p>
+    <p>Mini Knight, my Pygame Zero platformer, ported to TypeScript and running on a 3D cabinet.</p>
   </header>
 
   <p class="hint" id="hint" role="status">Drag to look around · Click the screen to play</p>
@@ -23,23 +23,25 @@
     <button class="btn primary" id="play">Play</button>
     <button class="btn" id="crt" aria-pressed="true">CRT</button>
     <button class="btn" id="bloom" aria-pressed="true">Bloom</button>
+    <button class="btn" id="sound" aria-pressed="true">Sound</button>
     <button class="btn" id="info" aria-expanded="false" aria-controls="about"><span class="lg">How it works</span><span class="sm" aria-hidden="true">Info</span></button>
   </div>
 
   <div class="touch" aria-hidden="true">
     <div class="pad"><button id="t-left" aria-label="Move left">◀</button><button id="t-right" aria-label="Move right">▶</button></div>
-    <button id="t-fire" aria-label="Launch">FIRE</button>
+    <div class="pad"><button id="t-jump" class="act" aria-label="Jump">JUMP</button><button id="t-fire" class="act" aria-label="Shoot">FIRE</button></div>
   </div>
 
   <aside class="about" id="about" hidden aria-labelledby="about-h">
     <button class="x" id="about-close" aria-label="Close">×</button>
     <div class="eyebrow">How it works</div>
-    <h2 id="about-h">Five pieces of Three.js</h2>
+    <h2 id="about-h">How the cabinet is built</h2>
     <ul>
-      <li><b>A scene inside a scene</b><span>The game is its own Three.js scene with an orthographic camera, drawn every frame into a 224 × 288 <code>WebGLRenderTarget</code>: the resolution of a 1980s vertical arcade monitor.</span></li>
+      <li><b>A Python game, ported</b><span>Mini Knight started as a Pygame Zero game. It's ported line by line to TypeScript with the same level, the same frame-based physics on a fixed 60&nbsp;Hz step, and the same sprites and sounds.</span></li>
+      <li><b>A scene inside a scene</b><span>The game is its own Three.js scene with an orthographic camera, drawn every frame into an 800 × 600 <code>WebGLRenderTarget</code>: a 4:3 monitor picture with the 2:1 level in the middle.</span></li>
       <li><b>CRT shader</b><span>A GLSL <code>ShaderMaterial</code> samples that texture with barrel curvature, a slight RGB convergence error, phosphor glow, one scanline per game row, an aperture-grille mask and a vignette. Toggle CRT to compare.</span></li>
       <li><b>HDR bloom</b><span>The screen, the marquee and the neon trim render brighter than white, so <code>UnrealBloomPass</code> picks up only those before tone mapping. Toggle Bloom to compare.</span></li>
-      <li><b>Raycast controls</b><span>The pointer is raycast against the curved screen. The hit's UV coordinate moves the paddle, so dragging on the glass works on a phone too.</span></li>
+      <li><b>Raycast controls</b><span>Clicks are raycast against the curved glass. The hit's UV becomes a game coordinate, so you can click the game's own START, SOUND and EXIT buttons on the screen.</span></li>
       <li><b>Blender to glTF</b><span>The cabinet loads <code>models/cabinet.glb</code> when it's there. A mesh named <code>Screen</code> gets the CRT material; <code>Joystick</code> and the buttons move with the game.</span></li>
     </ul>
     <p class="src">Showing <span id="model-source">the stand-in built in code</span>.</p>

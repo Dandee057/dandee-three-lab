@@ -16,11 +16,15 @@ Small, finished Three.js pieces, each showing one part of building for the 3D we
 
 ## Arcade cabinet
 
-A brick-breaker called **BRICK RUSH** runs on a 3D arcade cabinet in a neon-lit arcade. Drag to look around, click the screen to step up and play, and press Esc to step back. When nobody is playing, the cabinet runs its own attract-mode demo, like a real arcade machine.
+**Mini Knight**, a platformer I first wrote in Python with Pygame Zero, runs on a 3D arcade cabinet in a neon-lit arcade. Drag to look around, click the screen to step up and play, and press Esc to step back.
+
+Controls: arrow keys or A/D to move, Space to jump, Z or X to shoot. Up/down and Enter work the menu, or click its buttons on the glass. Phones get on-screen arrows plus JUMP and FIRE buttons.
 
 ### How it works
 
-**A scene inside a scene.** The game is its own `THREE.Scene` with an `OrthographicCamera` that works in monitor pixels. Every frame it is drawn into a 224 × 288 `WebGLRenderTarget`, the resolution of a 1980s vertical arcade monitor. Bricks and particles are `InstancedMesh`es, and the score panel and messages are canvas textures inside the game scene. ([`src/arcade/game.ts`](src/arcade/game.ts))
+**A Python game, ported.** Mini Knight is ported line by line from the Pygame Zero original: the same level, the same sprites and sounds, and the same frame-based physics run on a fixed 60 Hz step so it plays identically at any refresh rate. Sprites are textured planes in Pygame coordinates, with y pointing down, and collisions are the same rectangle tests. ([`src/arcade/mini-knight.ts`](src/arcade/mini-knight.ts))
+
+**A scene inside a scene.** The game is its own `THREE.Scene` with an `OrthographicCamera`. Every frame it is drawn into an 800 × 600 `WebGLRenderTarget`: a 4:3 monitor picture with the 2:1 level in the middle and a score bar above it. The cabinet only talks to the game through a small `CabinetGame` interface, so another game can be dropped in. ([`src/arcade/game.ts`](src/arcade/game.ts))
 
 **CRT shader.** The cabinet's screen is a gently bulging plane with a GLSL `ShaderMaterial` that samples the render target. It applies, in order:
 
@@ -35,14 +39,15 @@ The same shader shows static on the neighbouring cabinets. The **CRT** button fa
 
 **HDR bloom.** The scene renders into a half-float buffer. The screen, the marquee and the neon trim are deliberately brighter than 1.0, so `UnrealBloomPass` with a high threshold picks up only those. `OutputPass` then applies Neutral tone mapping and the sRGB conversion. Neutral rather than ACES keeps the neon colours saturated.
 
-**Raycast input.** The pointer is raycast against the curved screen, and the hit's UV coordinate drives the paddle. Dragging on the glass therefore works the same with a mouse or a finger. Phones also get on-screen arrows and a fire button.
+**Raycast input.** Clicks are raycast against the curved screen, and the hit's UV coordinate becomes a game coordinate, so the game's own START, SOUND and EXIT buttons can be clicked on the glass.
 
 **Blender → glTF.** On load the page checks for `public/models/cabinet.glb`. If it's there, a mesh named `Screen` receives the CRT material, and `Joystick` and the buttons animate with the game. If it isn't, a stand-in cabinet is built in code from an extruded side profile ([`src/arcade/cabinet.ts`](src/arcade/cabinet.ts)). See [`public/models/README.md`](public/models/README.md) for the export settings.
 
 **Details:**
 - Camera moves are time-based, so a slow frame doesn't stretch them.
 - Reduced-motion settings skip the camera flights.
-- The high score is kept in `localStorage`.
+- Sound starts on the first click, as browsers require.
+- The best clear time is kept in `localStorage`.
 
 ---
 
@@ -71,14 +76,18 @@ src/
   lab/                      lab index styles
   arcade/
     main.ts                 renderer, camera, post-processing, input, loop
-    game.ts                 BRICK RUSH: its own scene and render target
+    game.ts                 CabinetGame: what the cabinet needs from a game
+    mini-knight.ts          Mini Knight: level, physics, sprites, menus, audio
     crt.ts                  CRT ShaderMaterial and curved screen geometry
     cabinet.ts              glTF loading with the stand-in cabinet as fallback
     room.ts                 carpet, wall, neon sign, lights, environment
     arcade.css              page overlay
 public/models/              drop cabinet.glb here
+public/games/mini-knight/   sprites, sounds and music (see CREDITS.md)
 ```
 
 ## Licence
 
-MIT. See [LICENSE](LICENSE).
+The code is MIT. See [LICENSE](LICENSE).
+
+The Mini Knight art, sound and music are third-party assets under their own licences, not MIT. See [`public/games/mini-knight/CREDITS.md`](public/games/mini-knight/CREDITS.md).

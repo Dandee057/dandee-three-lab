@@ -32,7 +32,8 @@
 .touch > * { pointer-events: auto; }
 .touch .pad { display: flex; gap: 10px; }
 .touch button { width: 64px; height: 64px; border-radius: 50%; border: 1px solid var(--line); background: var(--panel); font-size: 22px; touch-action: none; }
-.touch #t-fire { background: rgba(51, 240, 255, 0.18); border-color: var(--cyan); font-size: 12px; font-weight: 700; letter-spacing: 0.06em; }
+.touch .act { background: rgba(51, 240, 255, 0.18); border-color: var(--cyan); font-size: 12px; font-weight: 700; letter-spacing: 0.06em; }
+.touch #t-fire { background: rgba(255, 63, 216, 0.2); border-color: var(--pink); }
 @media (pointer: coarse) { body.playing .touch { display: flex; } }
 
 .about {
@@ -66,6 +67,8 @@ body.playing .top p { display: none; }
   .top p { display: none; }
   .btn .lg { display: none; }
   .btn .sm { display: inline; }
-  .btn { padding: 8px 11px; font-size: 13px; }
+  .dock { flex-wrap: nowrap; gap: 6px; }
+  .btn { padding: 8px 9px; font-size: 12.5px; gap: 6px; }
+  .btn[aria-pressed]::before { width: 6px; height: 6px; }
   .hint { font-size: 12px; }
 }
