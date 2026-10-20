@@ -1,0 +1,36 @@
+/* Shared look for every page in the lab: a dark arcade floor at night.
+   Layout: full-bleed 3D stage, UI floating over it in small panels. Deliberately dark-only. */
+:root {
+  --bg: #07040d;
+  --panel: rgba(16, 10, 33, 0.82);
+  --panel-solid: #120b24;
+  --ink: #efe9ff;
+  --muted: #a99fd0;
+  --line: #2e2156;
+  --pink: #ff3fd8;
+  --cyan: #33f0ff;
+  --amber: #ffb02e;
+  --f-pixel: "Press Start 2P", "Courier New", monospace;
+  --f-body: "Chakra Petch", "Segoe UI", system-ui, sans-serif;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; }
+body { background: var(--bg); color: var(--ink); font-family: var(--f-body); font-size: 15px; line-height: 1.5; -webkit-font-smoothing: antialiased; }
+a { color: var(--cyan); }
+button { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
+[hidden] { display: none !important; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.eyebrow { font-family: var(--f-pixel); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--pink); }
+.btn {
+  border: 1px solid var(--line); background: var(--panel); color: var(--ink); border-radius: 8px;
+  padding: 9px 14px; font-weight: 600; font-size: 14px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px;
+  backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); transition: border-color .15s, background .15s;
+}
+.btn:hover { border-color: var(--muted); }
+.btn.primary { background: var(--pink); color: #1a0518; border-color: var(--pink); }
+.btn.primary:hover { background: #ff6be2; }
+.btn[aria-pressed="true"]::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--cyan); box-shadow: 0 0 8px var(--cyan); }
+.btn[aria-pressed="false"]::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--line); }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }

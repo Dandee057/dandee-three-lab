@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Three Lab</title>
+<meta name="description" content="Three.js experiments by Dan: shaders, render targets, post-processing and a Blender-to-glTF pipeline.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;600&family=Press+Start+2P&display=swap">
+</head>
+<body class="lab">
+  <main class="lab-wrap">
+    <header>
+      <div class="eyebrow">Dandee · Three Lab</div>
+      <h1>Three.js experiments</h1>
+      <p>Small, finished pieces that each show one part of building for the 3D web: shaders, render targets, post-processing and getting models out of Blender. Built with Three.js, TypeScript and Vite.</p>
+    </header>
+    <ul class="cards">
+      <li>
+        <a class="card live" href="arcade/">
+          <span class="tag">Play it</span>
+          <h2>Arcade cabinet</h2>
+          <p>A brick-breaker running on a 3D cabinet. The game renders to a texture and reaches the screen through a GLSL CRT shader, with HDR bloom on the neon.</p>
+          <span class="tech">Render targets · GLSL · Bloom · glTF</span>
+        </a>
+      </li>
+      <li>
+        <div class="card soon">
+          <span class="tag">Next</span>
+          <h2>Delivery network</h2>
+          <p>Trucks moving between depots on a stylised map, animated on the GPU, with flow lines drawn in a shader.</p>
+          <span class="tech">Instancing · Vertex shaders · Data viz</span>
+        </div>
+      </li>
+    </ul>
+    <footer><a href="https://dandeegames.com/">dandeegames.com</a></footer>
+  </main>
+  <script type="module" src="./src/lab/main.ts"></script>
+</body>
+</html>

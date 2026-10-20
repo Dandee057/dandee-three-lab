@@ -1,0 +1,18 @@
+/* Lab index: a single column of experiment cards on the dark arcade ground. */
+body.lab { min-height: 100%; background: radial-gradient(1200px 600px at 20% -10%, #2a0f45 0%, transparent 60%), radial-gradient(900px 500px at 110% 10%, #082b3a 0%, transparent 55%), var(--bg); }
+.lab-wrap { max-width: 880px; margin: 0 auto; padding-block: 56px 40px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); display: grid; gap: 32px; }
+.lab-wrap header { display: grid; gap: 12px; }
+.lab-wrap h1 { margin: 0; font-family: var(--f-pixel); font-size: clamp(22px, 5vw, 34px); line-height: 1.25; text-wrap: balance; text-shadow: 0 0 22px rgba(255, 63, 216, 0.5); }
+.lab-wrap header p { margin: 0; max-width: 62ch; color: var(--muted); font-size: 16px; }
+.cards { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
+.card { display: grid; gap: 8px; align-content: start; height: 100%; padding: 20px; border-radius: 12px; border: 1px solid var(--line); background: var(--panel-solid); color: var(--ink); text-decoration: none; }
+.card h2 { margin: 0; font-size: 22px; }
+.card p { margin: 0; color: var(--muted); }
+.card .tag { font-family: var(--f-pixel); font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase; width: max-content; padding: 5px 8px; border-radius: 4px; }
+.card .tech { font-size: 13px; color: var(--amber); }
+.card.live { border-color: var(--pink); box-shadow: 0 0 0 1px rgba(255, 63, 216, 0.25), 0 10px 40px -18px rgba(255, 63, 216, 0.6); transition: transform .15s, box-shadow .15s; }
+.card.live:hover { transform: translateY(-2px); box-shadow: 0 0 0 1px rgba(255, 63, 216, 0.5), 0 14px 46px -16px rgba(255, 63, 216, 0.8); }
+.card.live .tag { background: var(--pink); color: #1a0518; }
+.card.soon { opacity: 0.75; }
+.card.soon .tag { border: 1px solid var(--line); color: var(--muted); }
+footer { font-size: 14px; color: var(--muted); }
