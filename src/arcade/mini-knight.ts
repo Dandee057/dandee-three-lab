@@ -114,10 +114,16 @@ class Projectile {
 }
 
 export class MiniKnight implements CabinetGame {
+  readonly id = "mini-knight";
   readonly target: THREE.WebGLRenderTarget;
   readonly crtResolution = new THREE.Vector2(PIC_W / 2, PIC_H / 2);
   readonly aspect = PIC_W / PIC_H;
   readonly marquee = "MINI KNIGHT";
+  readonly accent = "#ff3fd8";
+  readonly brightness = 1.15;
+  readonly blurb = "My Pygame Zero platformer, ported line by line and drawn as a Three.js scene.";
+  readonly cover = ASSETS + "cover.jpg";
+  readonly pad = { grid: false, bomb: false, jump: "JUMP", shoot: "FIRE" };
   readonly controlsHint = "← → move · Space jump · Z shoot · Esc to step back";
   readonly touchHint = "◀ ▶ move · JUMP · FIRE · tap the menu to choose";
   stick = 0;
@@ -131,13 +137,14 @@ export class MiniKnight implements CabinetGame {
   private camera = new THREE.OrthographicCamera(0, PIC_W, PIC_H, 0, -10, 10);
   private tex = new Map<string, THREE.Texture>();
   private size = new Map<string, Sprite>();
-  private loaded = false;
+  private _loaded = false;
+  private loading: Promise<void> | null = null;
 
   private state: State = "menu";
   private player = new Player(110, 350);
   private enemies: Enemy[] = [];
   private projectiles: Projectile[] = [];
-  private keys: Record<GameKey, boolean> = { left: false, right: false, up: false, down: false, jump: false, shoot: false };
+  private keys: Record<GameKey, boolean> = { left: false, right: false, up: false, down: false, jump: false, shoot: false, bomb: false };
   private acc = 0;
   private menuSel = 0;
   private ticks = 0;
@@ -182,7 +189,11 @@ export class MiniKnight implements CabinetGame {
     pixelFontReady.then(() => { this.overlayKey = ""; this.topKey = ""; this.drawBars(true); });
   }
 
-  async load(): Promise<void> {
+  get texture(): THREE.Texture { return this.target.texture; }
+  get loaded(): boolean { return this._loaded; }
+
+  load(): Promise<void> { return (this.loading ??= this.loadAssets()); }
+  private async loadAssets(): Promise<void> {
     const loader = new THREE.TextureLoader();
     await Promise.all(IMAGES.map(async (name) => {
       const t = await loader.loadAsync(ASSETS + "images/" + name + ".png");
@@ -191,7 +202,7 @@ export class MiniKnight implements CabinetGame {
       const img = t.image as HTMLImageElement;
       this.tex.set(name, t); this.size.set(name, { name, w: img.width, h: img.height });
     }));
-    this.loaded = true;
+    this._loaded = true;
   }
 
   get playing(): boolean { return this.state === "game"; }
@@ -224,6 +235,7 @@ export class MiniKnight implements CabinetGame {
     } else if (this.state !== "game") this.restart(); // on_mouse_down: any click restarts
   }
   enter(): void { this.audio.unlock(); this.audio.startMusic(); }
+  sleep(): void { this.leave(); this.attract(); }
   leave(): void { this.audio.stopMusic(); for (const k in this.keys) this.keys[k as GameKey] = false; }
   attract(): void { this.state = "menu"; this.menuSel = 0; }
 
@@ -365,7 +377,7 @@ export class MiniKnight implements CabinetGame {
 
   // ---------- Frame update and drawing ----------
   update(dt: number): void {
-    if (!this.loaded) return;
+    if (!this._loaded) return;
     this.acc = Math.min(this.acc + dt, STEP * 5);
     while (this.acc >= STEP) { this.acc -= STEP; this.tick(); }
     if (this.state !== "game") this.stick *= 0.85;

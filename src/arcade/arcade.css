@@ -28,12 +28,37 @@
   padding: 5px 14px; white-space: nowrap; max-width: calc(100vw - 32px); overflow: hidden; text-overflow: ellipsis;
 }
 
-.touch { position: fixed; z-index: 2; inset: auto 0 calc(max(16px, env(safe-area-inset-bottom, 0px)) + 96px) 0; display: none; justify-content: space-between; padding-inline: max(16px, env(safe-area-inset-left, 0px)) max(16px, env(safe-area-inset-right, 0px)); pointer-events: none; }
+.touch { position: fixed; z-index: 2; inset: auto 0 calc(max(16px, env(safe-area-inset-bottom, 0px)) + 92px) 0; display: none; justify-content: space-between; align-items: flex-end; padding-inline: max(16px, env(safe-area-inset-left, 0px)) max(16px, env(safe-area-inset-right, 0px)); pointer-events: none; }
 .touch > * { pointer-events: auto; }
-.touch .pad { display: flex; gap: 10px; }
-.touch button { width: 64px; height: 64px; border-radius: 50%; border: 1px solid var(--line); background: var(--panel); font-size: 22px; touch-action: none; }
-.touch .act { background: rgba(51, 240, 255, 0.18); border-color: var(--cyan); font-size: 12px; font-weight: 700; letter-spacing: 0.06em; }
+.touch button { border: 1px solid var(--line); background: var(--panel); color: var(--ink); font-size: 20px; touch-action: none; border-radius: 14px; }
+/* D-pad: a cross for grid games, a pair of arrows for the rest */
+.touch .dpad { display: grid; grid-template-columns: repeat(3, 54px); grid-template-rows: repeat(3, 54px); gap: 4px; }
+#t-up { grid-area: 1 / 2; } #t-left { grid-area: 2 / 1; } #t-right { grid-area: 2 / 3; } #t-down { grid-area: 3 / 2; }
+body:not(.pad-grid) .touch .dpad { grid-template-columns: repeat(2, 64px); grid-template-rows: 64px; gap: 10px; }
+body:not(.pad-grid) #t-up, body:not(.pad-grid) #t-down { display: none; }
+body:not(.pad-grid) #t-left { grid-area: 1 / 1; border-radius: 50%; } body:not(.pad-grid) #t-right { grid-area: 1 / 2; border-radius: 50%; }
+.touch .acts { display: grid; grid-template-columns: 64px 64px; gap: 10px; justify-items: center; }
+.touch .act { width: 64px; height: 64px; border-radius: 50%; background: rgba(51, 240, 255, 0.18); border-color: var(--cyan); font-size: 10px; font-weight: 700; letter-spacing: 0.04em; }
 .touch #t-fire { background: rgba(255, 63, 216, 0.2); border-color: var(--pink); }
+.touch #t-start { grid-column: 1 / -1; height: 30px; padding: 0 14px; border-radius: 999px; font-size: 11px; font-weight: 700; letter-spacing: 0.08em; }
+.touch #t-bomb { grid-column: 1 / -1; display: none; width: 100%; height: 40px; border-radius: 999px; background: rgba(255, 176, 46, 0.2); border-color: var(--amber); }
+body.pad-bomb .touch #t-bomb { display: block; }
+
+/* Picker: which cabinet you're standing at, with arrows to walk along the row */
+.picker {
+  position: fixed; z-index: 2; left: 50%; transform: translateX(-50%);
+  bottom: calc(max(16px, env(safe-area-inset-bottom, 0px)) + 92px);
+  width: min(540px, calc(100vw - 32px));
+  display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 12px;
+  background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px;
+  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+}
+.picker .arrow { width: 40px; height: 40px; padding: 0; justify-content: center; font-size: 14px; }
+.pick-info { min-width: 0; text-align: center; }
+.pick-count { margin: 0; font-size: 11px; color: var(--muted); letter-spacing: 0.12em; }
+.pick-info h2 { margin: 3px 0 4px; font-family: var(--f-pixel); font-size: 14px; line-height: 1.3; text-shadow: 0 0 14px currentColor; }
+.pick-blurb { margin: 0; font-size: 13px; color: var(--muted); line-height: 1.4; }
+body.playing .picker { display: none; }
 @media (pointer: coarse) { body.playing .touch { display: flex; } }
 
 .about {
@@ -71,4 +96,7 @@ body.playing .top p { display: none; }
   .btn { padding: 8px 9px; font-size: 12.5px; gap: 6px; }
   .btn[aria-pressed]::before { width: 6px; height: 6px; }
   .hint { font-size: 12px; }
+  .picker { gap: 8px; padding: 8px; }
+  .picker .arrow { width: 36px; height: 36px; }
+  .pick-blurb { font-size: 12px; display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 }

@@ -5,6 +5,8 @@ import { CanvasTex, PIXEL_FONT, neonText, pixelFontReady } from "../shared/canva
 /** The arcade around the cabinet: patterned carpet, a back wall with a neon sign, and the lights. */
 export interface Room {
   screenLight: THREE.PointLight;
+  /** The key spotlight; it follows whichever cabinet is selected. */
+  key: THREE.SpotLight;
 }
 
 function carpet(): CanvasTex {
@@ -74,8 +76,8 @@ export function buildRoom(scene: THREE.Scene, renderer: THREE.WebGLRenderer): Ro
   neon.position.set(0, 2.55, -1.38);
   scene.add(neon);
 
-  scene.add(new THREE.HemisphereLight("#6b5bd6", "#120818", 0.35));
-  const key = new THREE.SpotLight("#ffe6f5", 28, 9, 0.5, 0.6, 1.6);
+  scene.add(new THREE.HemisphereLight("#6b5bd6", "#120818", 0.45));
+  const key = new THREE.SpotLight("#ffe6f5", 28, 9, 0.42, 0.65, 1.6);
   key.position.set(1.4, 3.6, 2.2);
   key.target.position.set(0, 0.9, -0.3);
   key.castShadow = true;
@@ -83,13 +85,15 @@ export function buildRoom(scene: THREE.Scene, renderer: THREE.WebGLRenderer): Ro
   key.shadow.bias = -0.0004;
   scene.add(key, key.target);
   const magenta = new THREE.PointLight("#ff3fd8", 6, 6, 1.6);
-  magenta.position.set(-2.4, 2.2, -0.6);
+  magenta.position.set(-3.2, 2.3, 0.2);
   const cyan = new THREE.PointLight("#33f0ff", 6, 6, 1.6);
-  cyan.position.set(2.4, 2.2, -0.6);
-  scene.add(magenta, cyan);
+  cyan.position.set(3.2, 2.3, 0.2);
+  const violet = new THREE.PointLight("#7b5cff", 4, 5, 1.6);
+  violet.position.set(0, 2.4, -0.9);
+  scene.add(magenta, cyan, violet);
 
   // Light thrown by the picture tube onto the control panel and the player
   const screenLight = new THREE.PointLight("#7fd8ff", 0.6, 2.2, 2);
   scene.add(screenLight);
-  return { screenLight };
+  return { screenLight, key };
 }

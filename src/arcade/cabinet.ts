@@ -28,7 +28,7 @@ export function screenSize(aspect: number): { w: number; h: number } {
 }
 
 /** Try the Blender model first; fall back to the stand-in. */
-export async function loadCabinet(url: string, marquee: string, aspect: number): Promise<Cabinet> {
+export async function loadCabinet(url: string, marquee: string, aspect: number, accent?: string): Promise<Cabinet> {
   try {
     const head = await fetch(url, { method: "HEAD" });
     const type = head.headers.get("content-type") || "";
@@ -48,7 +48,7 @@ export async function loadCabinet(url: string, marquee: string, aspect: number):
   } catch {
     /* no model, or it failed to load: use the stand-in */
   }
-  return buildStandIn(marquee, aspect);
+  return buildStandIn(marquee, aspect, accent);
 }
 
 // ---------------------------------------------------------------------------------------------------------
@@ -82,7 +82,7 @@ function sideArt(): CanvasTex {
   return t;
 }
 
-function marqueeArt(text: string): CanvasTex {
+function marqueeArt(text: string, accent: string): CanvasTex {
   const t = new CanvasTex(1024, 320);
   const draw = () => {
     const { ctx, canvas } = t;
@@ -91,8 +91,11 @@ function marqueeArt(text: string): CanvasTex {
     ctx.fillStyle = g; ctx.fillRect(0, 0, canvas.width, canvas.height);
     ctx.strokeStyle = "#33f0ff"; ctx.lineWidth = 6; ctx.globalAlpha = 0.6; ctx.strokeRect(18, 18, canvas.width - 36, canvas.height - 36); ctx.globalAlpha = 1;
     ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    // Long names shrink to fit inside the frame
     ctx.font = "64px " + PIXEL_FONT;
-    neonText(ctx, text, canvas.width / 2, canvas.height / 2 - 18, "#ff3fd8", 18);
+    const size = Math.min(64, Math.floor((64 * 880) / Math.max(1, ctx.measureText(text).width)));
+    ctx.font = size + "px " + PIXEL_FONT;
+    neonText(ctx, text, canvas.width / 2, canvas.height / 2 - 18, accent, 18);
     ctx.font = "20px " + PIXEL_FONT; ctx.fillStyle = "#ffb02e";
     ctx.fillText("1 OR 2 PLAYERS", canvas.width / 2, canvas.height - 62);
     t.update();
@@ -131,14 +134,17 @@ function panelBetween(a: [number, number], b: [number, number], mat: THREE.Mater
   return m;
 }
 
-export function buildStandIn(marquee: string, aspect: number): Cabinet {
+/** Builds the cabinet from code. `accent` colours the neon trim and the marquee lettering. */
+export function buildStandIn(marquee: string, aspect: number, accent = "#ff3fd8"): Cabinet {
   const group = new THREE.Group();
   group.name = "Cabinet (stand-in)";
 
   const laminate = new THREE.MeshStandardMaterial({ color: "#16102c", roughness: 0.35, metalness: 0.05 });
   const black = new THREE.MeshStandardMaterial({ color: "#09070f", roughness: 0.55 });
-  const trim = new THREE.MeshStandardMaterial({ color: "#ff3fd8", emissive: "#ff3fd8", emissiveIntensity: 1.15, roughness: 0.4 });
-  const lip = new THREE.MeshStandardMaterial({ color: "#3a1446", emissive: "#ff3fd8", emissiveIntensity: 0.35, roughness: 0.4 });
+  // A dark tube with an emissive glow: the glow carries the colour, so it can be dimmed
+  const trim = new THREE.MeshStandardMaterial({ color: new THREE.Color(accent).multiplyScalar(0.25), emissive: accent, emissiveIntensity: 1.15, roughness: 0.4 });
+  trim.name = "trim"; // the arcade dims it while you play
+  const lip = new THREE.MeshStandardMaterial({ color: "#3a1446", emissive: accent, emissiveIntensity: 0.35, roughness: 0.4 });
   const art = sideArt();
   art.texture.wrapS = art.texture.wrapT = THREE.ClampToEdgeWrapping;
   art.texture.repeat.set(1 / 0.88, 1 / 1.84);
@@ -166,13 +172,13 @@ export function buildStandIn(marquee: string, aspect: number): Cabinet {
   // Body panels between the sides
   group.add(panelBetween(at(1), at(2), laminate, 0.009));                  // back
   group.add(panelBetween(at(2), at(3), laminate, -0.009));                 // top
-  const marqueeTex = marqueeArt(marquee);
+  const marqueeTex = marqueeArt(marquee, accent);
   const marqueeMat = new THREE.MeshStandardMaterial({ map: marqueeTex.texture, emissive: "#ffffff", emissiveMap: marqueeTex.texture, emissiveIntensity: 1.1, roughness: 0.3 });
   const marqueePanel = panelBetween(at(3), at(4), [black, black, black, black, marqueeMat, black], 0.012);
   group.add(marqueePanel);
   group.add(panelBetween(at(4), at(5), black, 0.01));                      // underside of the marquee
   const bezel = bezelArt();
-  const bezelMat = new THREE.MeshStandardMaterial({ map: bezel.texture, roughness: 0.15, metalness: 0.2 });
+  const bezelMat = new THREE.MeshStandardMaterial({ map: bezel.texture, roughness: 0.3, metalness: 0, envMapIntensity: 0.35 }); // dark glass: a sheen, not a mirror
   const bezelPanel = panelBetween(at(5), at(6), [black, black, black, black, bezelMat, black], 0.02);
   group.add(bezelPanel);
   group.add(panelBetween(at(9), at(10), laminate, 0.01));                  // front

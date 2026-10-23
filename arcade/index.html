@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Arcade Cabinet · Three Lab</title>
-<meta name="description" content="Mini Knight, a platformer first written in Python, ported to TypeScript and playable on a 3D arcade cabinet in Three.js with a GLSL CRT shader and bloom.">
+<title>Arcade · Three Lab</title>
+<meta name="description" content="A row of eight playable 3D arcade cabinets in Three.js, each running one of my games through a GLSL CRT shader with bloom.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;600&family=Press+Start+2P&display=swap">
@@ -14,11 +14,21 @@
 
   <header class="top">
     <a class="back" href="../">← Three Lab</a>
-    <h1>Arcade cabinet</h1>
-    <p>Mini Knight, my Pygame Zero platformer, ported to TypeScript and running on a 3D cabinet.</p>
+    <h1>Arcade</h1>
+    <p>Eight of my games, each on its own 3D cabinet. Pick one and step up to play.</p>
   </header>
 
-  <p class="hint" id="hint" role="status">Drag to look around · Click the screen to play</p>
+  <section class="picker" aria-label="Choose a cabinet">
+    <button class="btn arrow" id="prev" aria-label="Previous cabinet">◀</button>
+    <div class="pick-info" aria-live="polite">
+      <p class="pick-count" id="pick-count">4 / 8</p>
+      <h2 id="pick-title">MINI KNIGHT</h2>
+      <p class="pick-blurb" id="pick-blurb"></p>
+    </div>
+    <button class="btn arrow" id="next" aria-label="Next cabinet">▶</button>
+  </section>
+
+  <p class="hint" id="hint" role="status">◀ ▶ to browse · Click the screen to play</p>
   <div class="dock">
     <button class="btn primary" id="play">Play</button>
     <button class="btn" id="crt" aria-pressed="true">CRT</button>
@@ -28,17 +38,27 @@
   </div>
 
   <div class="touch" aria-hidden="true">
-    <div class="pad"><button id="t-left" aria-label="Move left">◀</button><button id="t-right" aria-label="Move right">▶</button></div>
-    <div class="pad"><button id="t-jump" class="act" aria-label="Jump">JUMP</button><button id="t-fire" class="act" aria-label="Shoot">FIRE</button></div>
+    <div class="dpad">
+      <button id="t-up" class="g" aria-label="Up">▲</button>
+      <button id="t-left" aria-label="Left">◀</button><button id="t-right" aria-label="Right">▶</button>
+      <button id="t-down" class="g" aria-label="Down">▼</button>
+    </div>
+    <div class="acts">
+      <button id="t-start" class="sm" aria-label="Start">START</button>
+      <button id="t-bomb" class="act b" aria-label="Grenade">BOMB</button>
+      <button id="t-jump" class="act" aria-label="A">JUMP</button><button id="t-fire" class="act" aria-label="B">FIRE</button>
+    </div>
   </div>
 
   <aside class="about" id="about" hidden aria-labelledby="about-h">
     <button class="x" id="about-close" aria-label="Close">×</button>
     <div class="eyebrow">How it works</div>
-    <h2 id="about-h">How the cabinet is built</h2>
+    <h2 id="about-h">How the arcade is built</h2>
     <ul>
-      <li><b>A Python game, ported</b><span>Mini Knight started as a Pygame Zero game. It's ported line by line to TypeScript with the same level, the same frame-based physics on a fixed 60&nbsp;Hz step, and the same sprites and sounds.</span></li>
-      <li><b>A scene inside a scene</b><span>The game is its own Three.js scene with an orthographic camera, drawn every frame into an 800 × 600 <code>WebGLRenderTarget</code>: a 4:3 monitor picture with the 2:1 level in the middle.</span></li>
+      <li><b>One interface, eight games</b><span>Every cabinet talks to its game through one small <code>CabinetGame</code> interface: give me a texture, take these keys, tell me when to flash. The cabinet does the rest.</span></li>
+      <li><b>Cartridges loaded on demand</b><span>Seven games are the cartridges from my website, each a plain script with the same engine API. A cartridge is only fetched when you walk up to its cabinet, and only the selected cabinet runs its game. The rest show cover art.</span></li>
+      <li><b>A Python game, ported</b><span>Mini Knight started as a Pygame Zero game. It's ported line by line to TypeScript and drawn as its own Three.js scene with an orthographic camera into a <code>WebGLRenderTarget</code>.</span></li>
+      <li><b>A 3D game inside a 3D game</b><span>Neon Run renders its own Three.js scene off-screen every frame, and that picture becomes the texture on a tube inside this scene. It was written for three.js r128, so it gets a small shim that converts its old light units.</span></li>
       <li><b>CRT shader</b><span>A GLSL <code>ShaderMaterial</code> samples that texture with barrel curvature, a slight RGB convergence error, phosphor glow, one scanline per game row, an aperture-grille mask and a vignette. Toggle CRT to compare.</span></li>
       <li><b>HDR bloom</b><span>The screen, the marquee and the neon trim render brighter than white, so <code>UnrealBloomPass</code> picks up only those before tone mapping. Toggle Bloom to compare.</span></li>
       <li><b>Raycast controls</b><span>Clicks are raycast against the curved glass. The hit's UV becomes a game coordinate, so you can click the game's own START, SOUND and EXIT buttons on the screen.</span></li>
