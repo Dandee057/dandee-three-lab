@@ -42,7 +42,7 @@ export interface CartSpec {
   /** Labels for the A and B touch buttons. */
   a: string;
   b: string;
-  /** Needs the global THREE (the 3D cartridges). */
+  /** Needs the global THREE (Neon Run, written for three.js r128). Puttline brings its own. */
   three?: boolean;
 }
 
@@ -50,9 +50,9 @@ export const CARTRIDGES: CartSpec[] = [
   { id: "neon-run", global: "NeonRun", marquee: "NEON RUN", accent: "#33f0ff", three: true,
     blurb: "A 3D endless runner. Its own Three.js scene renders off-screen and is copied onto the tube every frame.",
     controls: "← → switch lanes · Space jump · X pulse · Enter start · Esc step back", touch: "◀ ▶ lanes · JUMP · PULSE", a: "JUMP", b: "PULSE" },
-  { id: "hyrox-rush", global: "HyroxRush", marquee: "HYROX RUSH", accent: "#ffd100",
-    blurb: "Eight runs and eight stations in race order, each a tiny track-and-field mini game. Beat your PB.",
-    controls: "← → run · Space = A · X = B · Enter start · Esc step back", touch: "◀ ▶ run · A · B", a: "A", b: "B" },
+  { id: "puttline", global: "Puttline", marquee: "PUTTLINE", accent: "#ffd54f",
+    blurb: "Nine holes of mini golf with real ball physics, each with a risky hole-in-one shortcut. Toot, jump and redo once a hole.",
+    controls: "← → aim · ↑ ↓ power · Space putt · X overview · Rolling: Space jump, X toot, Enter redo · Esc step back", touch: "◀ ▶ aim · ▲ ▼ power · PUTT · MAP · START redo", a: "PUTT", b: "MAP" },
   { id: "stock-room", global: "StockRoom", marquee: "STOCK ROOM", accent: "#ff8a3d",
     blurb: "A crate-pushing puzzle in the shop's back room. Eight levels, each with a solver-checked par.",
     controls: "Arrows move · Space undo · X restart · Enter start · Esc step back", touch: "Pad to move · UNDO · RESET", a: "UNDO", b: "RESET" },
@@ -128,7 +128,7 @@ export class CartridgeGame implements CabinetGame {
     this.cover = BASE + spec.id + "/cover.jpg";
     this.controlsHint = spec.controls;
     this.touchHint = spec.touch;
-    this.pad = { grid: spec.id !== "neon-run" && spec.id !== "hyrox-rush", bomb: spec.id === "riot-runner", jump: spec.a, shoot: spec.b };
+    this.pad = { grid: spec.id !== "neon-run", bomb: spec.id === "riot-runner", jump: spec.a, shoot: spec.b };
     this.canvas.width = W; this.canvas.height = H;
     const ctx = this.canvas.getContext("2d");
     if (!ctx) throw new Error("2D canvas is not available");

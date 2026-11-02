@@ -55,7 +55,7 @@ composer.addPass(new OutputPass());
 const carts = new Map(CARTRIDGES.map((c) => [c.id, c]));
 const cart = (id: string) => new CartridgeGame(carts.get(id)!);
 const games: CabinetGame[] = [
-  cart("neon-run"), cart("hyrox-rush"), cart("stock-room"), new MiniKnight(),
+  cart("neon-run"), cart("puttline"), cart("stock-room"), new MiniKnight(),
   cart("riot-runner"), cart("surge-fighters"), cart("shelf-monsters"), cart("scrap-bots")
 ];
 const hashIndex = games.findIndex((g) => "#" + g.id === location.hash);

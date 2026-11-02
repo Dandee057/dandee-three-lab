@@ -21,7 +21,7 @@ A neon-lit arcade with a row of eight cabinets, each running one of my games. Us
 | Cabinet | Game |
 | --- | --- |
 | Neon Run | A 3D endless runner, its own Three.js scene rendered onto the tube |
-| Hyrox Rush | A fitness race: eight runs and eight stations, each a tiny mini game |
+| Puttline | Mini golf with real ball physics: nine themed holes, each with a hole-in-one shortcut ([its own repo](https://github.com/dandee057/puttline)) |
 | Stock Room | A crate-pushing puzzle, eight levels with solver-checked pars |
 | Mini Knight | My Pygame Zero platformer, ported to TypeScript |
 | Riot Runner | A run-and-gun mission with POWs, a mini tank and a boss |
@@ -36,6 +36,8 @@ The controls for each game are shown under the cabinet while you play. Phones ge
 **One interface, eight games.** Each cabinet talks to its game only through a small `CabinetGame` interface: a texture to show, keys in, and hooks out for flashing the screen light, pressing the cabinet's buttons and stepping back. ([`src/arcade/game.ts`](src/arcade/game.ts))
 
 **Cartridges loaded on demand.** Seven of the games are the cartridges from [dandeegames.com](https://dandeegames.com/), unchanged: plain scripts that share one engine API (`update`, `drawScreen`, `hold`, `press`…). One adapter, `CartridgeGame`, turns that API into a `CabinetGame` by drawing into a 2D canvas that becomes a `CanvasTexture`. A cartridge's script is only fetched when you walk up to its cabinet, and only the selected cabinet runs its game. The other seven show cover art, so the frame cost stays the same however many cabinets there are. ([`src/arcade/cartridge.ts`](src/arcade/cartridge.ts))
+
+**A physics game on a tube.** Puttline is the heaviest cartridge: the whole game, with its own copy of three.js, a bloom pass and the Rapier physics engine compiled to WebAssembly, built as one script by its repo's `npm run build:cartridge`. Its cartridge file is a 4 kB loader that registers straight away and only fetches the 5 MB game when you walk up to its cabinet. The game renders its scene off-screen at the tube's size, draws its HUD over the top, and is played with the stick and two buttons instead of the mouse.
 
 **A 3D game inside a 3D game.** Neon Run renders its own Three.js scene off-screen every frame, and that picture becomes the texture on a tube in this scene. It was written against three.js r128, so instead of loading a second copy of three.js it gets a small shim of the lab's own build. The shim converts the old light units (lights became physically based in r155) and lists only the classes Neon Run uses, so tree-shaking still works. ([`src/arcade/legacy-three.ts`](src/arcade/legacy-three.ts))
 
