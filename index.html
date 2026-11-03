@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Three Lab</title>
-<meta name="description" content="Three.js experiments by Dan: shaders, render targets, post-processing and a Blender-to-glTF pipeline.">
+<meta name="description" content="Three.js experiments by Dan: an arcade of playable cabinets, a scroll-driven product page, shader hero sections, a room planner and mini golf with real physics.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;600&family=Press+Start+2P&display=swap">
@@ -14,23 +14,83 @@
     <header>
       <div class="eyebrow">Dandee · Three Lab</div>
       <h1>Three.js experiments</h1>
-      <p>Small, finished pieces that each show one part of building for the 3D web: shaders, render targets, post-processing and getting models out of Blender. Built with Three.js, TypeScript and Vite.</p>
+      <p>Small, finished pieces that each show one part of building for the 3D web: shaders, physics, scroll-driven storytelling, product configurators and getting models out of Blender. Built with Three.js, TypeScript and Vite.</p>
+      <nav class="filters" aria-label="Filter by kind">
+        <button type="button" data-kind="all" aria-pressed="true">All</button>
+        <button type="button" data-kind="play" aria-pressed="false">Play</button>
+        <button type="button" data-kind="web" aria-pressed="false">For websites</button>
+        <button type="button" data-kind="tool" aria-pressed="false">Tools</button>
+      </nav>
     </header>
     <ul class="cards">
-      <li>
-        <a class="card live" href="arcade/">
-          <span class="tag">Play it</span>
-          <h2>Arcade</h2>
-          <p>Eight of my games on a row of 3D cabinets, from a Python platformer port to a 3D runner rendered inside the scene. Each game renders to a texture and reaches its tube through a GLSL CRT shader, with HDR bloom on the neon.</p>
-          <span class="tech">Render targets · GLSL · Bloom · Lazy loading</span>
-        </a>
+      <li class="wide" data-kind="play">
+        <article class="card live">
+          <a class="shot" href="arcade/"><img src="thumbs/arcade.jpg" alt="A row of neon arcade cabinets, each showing a game" loading="lazy"></a>
+          <div class="body">
+            <span class="tag">Play it</span>
+            <h2><a href="arcade/">Arcade</a></h2>
+            <p>Eight of my games on a row of 3D cabinets, from a Python platformer port to mini golf with real physics. Each game renders to a texture and reaches its tube through a GLSL CRT shader, with HDR bloom on the neon.</p>
+            <span class="tech">Render targets · GLSL · Bloom · Lazy loading</span>
+            <span class="links"><a class="go" href="arcade/">Open</a></span>
+          </div>
+        </article>
       </li>
-      <li>
+      <li data-kind="web">
+        <article class="card live">
+          <a class="shot" href="https://dandee057.github.io/soundline/"><img src="thumbs/soundline.jpg" alt="Headphones taken apart into labelled layers" loading="lazy"></a>
+          <div class="body">
+            <span class="tag">Scroll it</span>
+            <h2><a href="https://dandee057.github.io/soundline/">Soundline</a></h2>
+            <p>A scroll-driven product page for made-up headphones. They turn, come apart into seven labelled layers, cancel the noise around them and change colour, with a soundtrack that builds as you scroll.</p>
+            <span class="tech">GSAP ScrollTrigger · Lenis · GLSL · Web Audio</span>
+            <span class="links"><a class="go" href="https://dandee057.github.io/soundline/">Open</a><a href="https://github.com/dandee057/soundline">Code</a></span>
+          </div>
+        </article>
+      </li>
+      <li data-kind="web">
+        <article class="card live">
+          <a class="shot" href="https://dandee057.github.io/heroline/"><img src="thumbs/heroline.jpg" alt="A flowing purple and pink gradient behind a website headline" loading="lazy"></a>
+          <div class="body">
+            <span class="tag">Restyle it</span>
+            <h2><a href="https://dandee057.github.io/heroline/">Heroline</a></h2>
+            <p>Five interactive hero sections, each one a shader: liquid gradient, particle logo, image distortion, morphing blob and text through glass. Restyle any of them live and share it as a link.</p>
+            <span class="tech">GLSL · GPU particles · Transmission · onBeforeCompile</span>
+            <span class="links"><a class="go" href="https://dandee057.github.io/heroline/">Open</a><a href="https://github.com/dandee057/heroline">Code</a></span>
+          </div>
+        </article>
+      </li>
+      <li data-kind="tool">
+        <article class="card live">
+          <a class="shot" href="https://dandee057.github.io/roomline/"><img src="thumbs/roomline.jpg" alt="A furnished lounge in 3D next to a furniture list" loading="lazy"></a>
+          <div class="body">
+            <span class="tag">Plan it</span>
+            <h2><a href="https://dandee057.github.io/roomline/">Roomline</a></h2>
+            <p>A room planner at real sizes. Draw rooms, connect them into a house, add furniture and see what fits: it checks walkways, door swings and wardrobe space as you go, with a catalogue editor for the shop.</p>
+            <span class="tech">React Three Fiber · Fit rules · glTF upload · Share links</span>
+            <span class="links"><a class="go" href="https://dandee057.github.io/roomline/">Open</a><a href="https://github.com/dandee057/roomline">Code</a></span>
+          </div>
+        </article>
+      </li>
+      <li data-kind="play">
+        <article class="card live">
+          <a class="shot" href="https://dandee057.github.io/puttline/"><img src="thumbs/puttline.jpg" alt="A mini golf hole with a windmill, seen from above" loading="lazy"></a>
+          <div class="body">
+            <span class="tag">Play it</span>
+            <h2><a href="https://dandee057.github.io/puttline/">Puttline</a></h2>
+            <p>Nine themed holes of mini golf with real ball physics, each with a risky hole-in-one shortcut. Every hole is proved finishable both ways by a solver. Toot, jump and redo once a hole.</p>
+            <span class="tech">Rapier physics · Bloom · Solver-tested levels</span>
+            <span class="links"><a class="go" href="https://dandee057.github.io/puttline/">Open</a><a href="https://github.com/dandee057/puttline">Code</a><a href="arcade/#puttline">In the arcade</a></span>
+          </div>
+        </article>
+      </li>
+      <li data-kind="tool">
         <div class="card soon">
-          <span class="tag">Next</span>
-          <h2>Delivery network</h2>
-          <p>Trucks moving between depots on a stylised map, animated on the GPU, with flow lines drawn in a shader.</p>
-          <span class="tech">Instancing · Vertex shaders · Data viz</span>
+          <div class="body">
+            <span class="tag">Next</span>
+            <h2>Delivery network</h2>
+            <p>Trucks moving between depots on a stylised map, animated on the GPU, with flow lines drawn in a shader.</p>
+            <span class="tech">Instancing · Vertex shaders · Data viz</span>
+          </div>
         </div>
       </li>
     </ul>

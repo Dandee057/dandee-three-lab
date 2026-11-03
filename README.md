@@ -7,7 +7,13 @@ Small, finished Three.js pieces, each showing one part of building for the 3D we
 | Experiment | What it shows |
 | --- | --- |
 | [Arcade](arcade/) | Eight playable games on a row of 3D cabinets: games rendered to textures, a GLSL CRT shader, HDR bloom, raycast input, lazy-loaded game code, and a Blender → glTF model pipeline |
+| [Soundline](https://dandee057.github.io/soundline/) | A scroll-driven product page: one GSAP timeline scrubbed by the scroll, an exploded view with labels pinned to 3D parts, a noise-cancelling wave shader and a soundtrack that builds as you scroll ([repo](https://github.com/dandee057/soundline)) |
+| [Heroline](https://dandee057.github.io/heroline/) | Five interactive hero sections, each a custom shader, restyled live and shared as a link ([repo](https://github.com/dandee057/heroline)) |
+| [Roomline](https://dandee057.github.io/roomline/) | A room planner at real sizes in React Three Fiber, with fit checks, connected rooms and a catalogue editor ([repo](https://github.com/dandee057/roomline)) |
+| [Puttline](https://dandee057.github.io/puttline/) | Mini golf with Rapier physics and solver-proved holes; also playable on a cabinet in the Arcade ([repo](https://github.com/dandee057/puttline)) |
 | Delivery network *(next)* | GPU-animated instances and shader-drawn flow lines on a stylised map |
+
+Soundline, Heroline, Roomline and Puttline live in their own repositories and deploy themselves; the lab's front page links to them, with a filter for games, website pieces and tools.
 
 <!-- Add a screenshot or GIF, e.g. docs/arcade.gif:
 ![Arcade](docs/arcade.gif) -->
@@ -105,6 +111,7 @@ src/
     room.ts                 carpet, wall, neon sign, lights, environment
     arcade.css              page overlay
 public/models/              drop cabinet.glb here
+public/thumbs/              screenshots for the front page cards
 public/games/mini-knight/   sprites, sounds and music (see CREDITS.md)
 public/games/<cartridge>/   each cartridge's script and cover image
 ```
